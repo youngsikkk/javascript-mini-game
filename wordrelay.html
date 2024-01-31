@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>끝말잇기</title>
+</head>
+<body>
+  <div id="page">
+    <h1>끝말잇기 시작</h1>
+    <div><span id="order"></span>번째 참가자</div>
+    <div>단어: <span id="beforeValue"></span></div>
+    <input id ='inputTab' type="text"/>
+    <button id='inputbutton'>입력</button>
+  </div>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      let total = prompt("몇 명이 참가하나요?"); // prompt 문자열 출력됨
+    if (total === null) {
+      alert("게임이 종료됩니다");
+      return document.getElementById("page").textContent = "이용해주셔서 감사합니다. 다시 이용하시려면 새로고침을 눌러주세요."
+    } 
+    if (!parseInt(total)) {
+      alert("정확한 값을 입력해주세요");
+      window.location.reload();
+    } else {
+      total = parseInt(total);
+    }
+    let order = 1;
+    let tempValue = ""
+    let value = ""
+
+    const $order = document.getElementById('order');
+    const $beforeValue = document.getElementById('beforeValue');
+    const $inputTab = document.getElementById('inputTab');
+    const $inputButton = document.getElementById('inputbutton');
+    $order.innerHTML = order;
+    const handleChange = (e) => {
+      tempValue = e.target.value
+    }
+    const handleClick = (e) => {
+      value = tempValue;
+      if ((!$beforeValue.textContent || value[0] === $beforeValue.textContent[$beforeValue.textContent.length-1])&&value.length === 3) {
+        $beforeValue.textContent = value;
+        order === total ? order = 1 : order += 1
+        $order.textContent = order;  
+        
+      }
+      else{
+        alert('정확한 값을 입력해주세요');
+      } 
+      value = "";
+      tempValue = "";
+      $inputTab.value = "";
+      $inputTab.focus();
+    };
+
+    $inputButton.addEventListener('click', handleClick);
+    $inputTab.addEventListener('change', handleChange);
+  });
+  </script>
+</body>
+</html>
