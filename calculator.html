@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>계산기</title>
+</head>
+<body>
+  <input readonly id="operator">
+  <input readonly id="result" type="number">
+  <div class="row">
+    <button id="num-7">7</button>
+    <button id="num-8">8</button>
+    <button id="num-9">9</button>
+    <button id="plus">+</button>
+  </div>
+  <div class="row">
+    <button id="num-4">4</button>
+    <button id="num-5">5</button>
+    <button id="num-6">6</button>
+    <button id="minus">-</button>
+  </div>
+  <div class="row">
+    <button id="num-1">1</button>
+    <button id="num-2">2</button>
+    <button id="num-3">3</button>
+    <button id="devide">/</button>
+  </div>
+  <div class="row">
+    <button id="clear">C</button>
+    <button id="num-0">0</button>
+    <button id="equal">=</button>
+    <button id="multiple">*</button>
+  </div>
+  <style>
+    * {box-sizing: border-box;}
+    #result {width: 182px; height: 50px; margin: 5px; text-align: right;}
+    #operator {width: 50px; height: 50px; margin: 5px; text-align: center;}
+    button {width: 50px; height: 50px; margin:5px;}
+  </style>
+  <script>
+    let numOne = "";
+    let numTwo = "";
+    let operator = "";
+    const handleClick = (e) => {
+      if (!operator) {
+        numOne += e.target.textContent;
+        $result.value = numOne;
+      } else {
+        numTwo += e.target.textContent;
+        $result.value = numTwo;
+      }
+    }
+    const handleClickOperator = (e) => {
+      if (!numOne || $operator.value.length>=1) {
+        alert('잘못된 입력입니다.');
+      }
+      else {
+        operator += e.target.textContent;
+        $operator.value = operator;
+      }
+    }
+    const $result = document.querySelector("#result");
+    const $operator = document.querySelector("#operator");
+    document.querySelector("#num-1").addEventListener("click", handleClick);
+    document.querySelector("#num-2").addEventListener("click", handleClick);
+    document.querySelector("#num-3").addEventListener("click", handleClick);
+    document.querySelector("#num-4").addEventListener("click", handleClick);
+    document.querySelector("#num-5").addEventListener("click", handleClick);
+    document.querySelector("#num-6").addEventListener("click", handleClick);
+    document.querySelector("#num-7").addEventListener("click", handleClick);
+    document.querySelector("#num-8").addEventListener("click", handleClick);
+    document.querySelector("#num-9").addEventListener("click", handleClick);
+    document.querySelector("#num-0").addEventListener("click", handleClick);
+    document.querySelector("#minus").addEventListener("click", handleClickOperator);
+    document.querySelector("#plus").addEventListener("click", handleClickOperator); 
+    document.querySelector("#devide").addEventListener("click", handleClickOperator);
+    document.querySelector("#multiple").addEventListener("click", handleClickOperator);
+    document.querySelector("#clear").addEventListener("click", () => {
+      numOne = "";
+      numTwo = "";
+      operator = "";
+      $operator.value = "";
+      $result.value = "";
+    });
+    document.querySelector("#equal").addEventListener("click", () => {
+      if (!numOne || !numTwo) { alert("잘못된 입력입니다"); }
+      else {
+         switch (operator) {
+          case "+": 
+            $result.value = parseInt(numOne) + parseInt(numTwo);
+            operator = "";
+            $operator.value = "";
+            numOne = parseInt(numOne) + parseInt(numTwo);
+            numTwo = "";
+            break;
+          case "-":
+            $result.value = parseInt(numOne) - parseInt(numTwo);
+            operator = "";
+            $operator.value = "";
+            numOne = parseInt(numOne) - parseInt(numTwo);
+            numTwo = "";
+            break;
+          case "*":
+            $result.value = parseInt(numOne) * parseInt(numTwo);
+            operator = "";
+            $operator.value = "";
+            numOne = parseInt(numOne) * parseInt(numTwo);
+            numTwo = "";
+            break;
+          case "/":
+            $result.value = parseInt(numOne) / parseInt(numTwo);
+            operator = "";
+            $operator.value = "";
+            numOne = parseInt(numOne) / parseInt(numTwo);
+            numTwo = "";
+            break;
+        }
+      }
+    });
+  </script>
+</body>
+</html>
