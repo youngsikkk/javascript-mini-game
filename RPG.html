@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>텍스트 RPG</title>
+</head>
+<body>
+  <form id="start-screen">
+    <input id="name-input" placeholder="주인공 이름을 입력하세요"/>
+    <button id="start">시작</button>
+  </form>
+  <div id="screen">
+    <div id="hero-stat">
+      <span id="hero-name"></span>
+      <span id="hero-level"></span>
+      <span id="hero-hp"></span>
+      <span id="hero-xp"></span>
+      <span id="hero-att"></span>
+    </div>
+    <form id="game-menu" style="display:none;">
+      <div id="menu-1">1. 모험</div>
+      <div id="menu-2">2. 휴식</div>
+      <div id="menu-3">3. 종료</div>
+      <input id="menu-input"/>
+      <button id="menu-button">입력</button>
+    </form>
+    <form id="battle-menu" style="display:none;">
+      <div id="battle-1">1. 공격</div>
+      <div id="battle-2">2. 회복</div>
+      <div id="battle-3">3. 도망</div>
+      <input id="battle-input"/>
+      <button id="battle-button">입력</button>
+    </form>
+    <div id="message"></div>
+    <div id="monster-stat">
+      <span id="monster-name"></span>
+      <span id="monster-hp"></span>
+      <span id="monster-att"></span>
+    </div>
+  </div>
+
+<script>
+  // 이벤트리스너, setTimeout() 등 타이머, ajax 등은 비동기
+  const $startScreen = document.querySelector("#start-screen");
+  const $gameMenu = document.querySelector("#game-menu");
+  const $battleMenu = document.querySelector("#battle-menu");
+  const $heroName = document.querySelector("#hero-name");
+  const $heroLevel = document.querySelector("#hero-level");
+  const $heroHp = document.querySelector("#hero-hp");
+  const $heroXp = document.querySelector("#hero-xp");
+  const $heroAtt = document.querySelector("#hero-att");
+  const $monsterName = document.querySelector('#monster-name'); 
+  const $monsterHp = document.querySelector('#monster-hp'); 
+  const $monsterAtt = document.querySelector('#monster-att'); 
+  const $message = document.querySelector("#message");
+
+  class Game {
+    constructor(name) {
+      this.monster = null;
+      this.monsterList = [
+      { name: "슬라임", hp: 25, att:10, xp:10},
+      { name: "스켈레톤", hp: 50, att:15, xp:20},
+      { name: "마왕", hp: 150, att:35, xp:50},
+      ];
+      this.start(name);
+    }
+    start(name) {
+      $gameMenu.addEventListener("submit", this.onGameMenuInput);
+      $battleMenu.addEventListener("submit", this.onBattleMenuInput);
+      this.changeScreen("game");
+      this.hero = new Hero(this, name);
+      this.updateHeroStat();
+    }
+    changeScreen(screen) {
+      if (screen === 'start') {
+        $startScreen.style.display = "block";  
+        $gameMenu.style.display = "none";  
+        $battleMenu.style.display = "none";  
+      } else if (screen === 'game') {
+        $startScreen.style.display = "none";  
+        $gameMenu.style.display = "block";  
+        $battleMenu.style.display = "none";
+      } else if (screen === 'battle') {
+        $startScreen.style.display = "none";  
+        $gameMenu.style.display = "none";  
+        $battleMenu.style.display = "block";
+      }
+    }
+    updateMonsterStat() {
+      const { monster } = this; 
+      if (monster === null) {
+        $monsterName.textContent = '';
+        $monsterHp.textContent = '';
+        $monsterAtt.textContent = ''; 
+        return;
+      }
+      $monsterName.textContent = monster.name;
+      $monsterHp.textContent = `HP: ${monster.hp}/${monster.maxHp}`;
+      $monsterAtt.textContent = `ATT: ${monster.att}`;
+    }
+    // addEventListener에서 this를 사용하면 addEventListener의 객체를 지목하게 된다.
+    // this가 익숙하지 않으면 console.log 찍어볼 것
+    // 숙달되면 보인다. 그때 일반함수 또는 화살표함수를 쓸지 정하면 된다.
+    // this는 원칙대로 작동한다.
+    // 화살표함수를 쓰면 this는 자신 밖에 있는 this를 그대로 가져온다.
+    // this는 함수가 호출될 떄 결정된다.
+    onGameMenuInput = (event) => {
+      event.preventDefault();
+      const input = event.target["menu-input"].value;
+      if (input === '1') {
+        this.changeScreen("battle");
+        this.createMonster();
+      } else if (input === '2') {
+
+      } else if (input === "3") {
+
+      }
+    }
+    createMonster() {
+      const randomIndex = Math.floor(Math.random() *this.monsterList.length);
+      const randomMonster = this.monsterList[randomIndex];
+      console.log(this);
+      this.monster = new Monster(
+        this,
+        randomMonster.name,
+        randomMonster.hp,
+        randomMonster.att,
+        randomMonster.xp,
+      );
+      this.updateMonsterStat();
+      this.showMessage(`몬스터와 마주쳤다. ${this.monster.name}인 것 같다!`);
+      console.log(this.monster);
+    }
+    onBattleMenuInput = (event) => {
+      event.preventDefault();
+      const input = event.target["battle-input"].value;
+      if (input === '1') {
+        const { hero, monster } = this; 
+        console.log(monster);
+        hero.attack(monster); 
+        monster.attack(hero);
+        if (hero.hp <= 0) { // 주인공 체력이 0이면 게임 종료
+          this.showMessage(`${hero.lev} 레벨에서 전사. 새 주인공을 생성하세요.`); 
+          this.quit();
+        } else if (monster.hp <= 0) { // 몬스터의 체력이 0이면 경험치
+          this.showMessage(`몬스터를 잡아 ${this.monster.xp} 경험치를 얻었다.`);
+          hero.getXp(monster.xp);
+          this.monster = null;
+          this.updateHeroStat();
+          this.updateMonsterStat();
+          this.changeScreen('game');
+        } else { // 피해 주고받기
+          this.showMessage(`${hero.att}의 데미지를 주고, ${monster.att}의 데미지를 받았다.`);
+          this.updateHeroStat(); 
+          this.updateMonsterStat();
+        }
+      } else if (input === '2') {
+        hero.heal();
+      } else if (input === "3") {
+        this.changeScreen("game");
+      }
+    }
+    updateHeroStat () {
+      const { hero } = this;
+      if (hero === null) {
+        $heroName.textContent = "";
+        $heroAtt.textContent = "";
+        $heroHp.textContent = "";
+        $heroLevel.textContent = "";
+        $heroXp.textContent = "";
+        return
+      }
+      $heroName.textContent = hero.name;
+      $heroAtt.textContent = `ATT: ${hero.att}`;
+      $heroHp.textContent = `HP: ${hero.hp}/${hero.maxHp}`;
+      $heroLevel.textContent = `${hero.lev}Lev`;
+      $heroXp.textContent = `XP: ${hero.xp}/${15*hero.lev}`;
+    }
+    showMessage(text) {
+      $message.textContent = text;
+    }
+    quit() { // 게임 종료 메서드
+      this.hero = null; 
+      this.monster = null; 
+      this.updateHeroStat();
+      this.updateMonsterStat();
+      $gameMenu.removeEventListener('submit', this.onGameMenuInput);
+      $battleMenu.removeEventListener('submit', this.onBattleMenuInput); 
+      this.changeScreen('start');
+      game = null;
+    }
+  }
+  class Unit { // 공통 클래스
+    constructor(game, name, hp, att, xp) { // 생성자
+      this.game = game;
+      this.name = name; 
+      this.maxHp = hp;
+      this.hp = hp;
+      this.att = att;
+      this.xp = xp;
+    }
+    attack(target) { // 공격 메서드
+      target.hp -= this.att;
+    }
+  }
+  class Monster extends Unit {
+   constructor(game, name, hp, att, xp) {
+    super(game, name, hp, att, xp);
+    this.game = game;
+   }
+  }
+  // 자바스크립트는 다중 상속이 되지 않는다.
+  class Hero extends Unit { // 상속
+    constructor(game, name) {
+      super(game, name, 100, 10, 0); // 부모 클래스 생성자 호출, 순서 맞춰주어야 함.
+      this.lev = 1;
+      this.game = game;
+    }
+    heal(monster) {
+      this.hp += 20;
+      this.hp -= monster.att;
+    }
+    getXp(xp) {
+      this.xp += xp;
+      if (this.xp >= this.lev*15) {
+        this.xp -= this.lev*15;
+        this.lev += 1;
+        this.maxHp += 5;
+        this.att += 5;
+        this.hp = this.maxHp;
+        this.game.showMessage(`레벨업! 레벨 ${this.lev}`);
+      }
+    }
+  }
+
+  let game = null;
+  $startScreen.addEventListener('submit', (event) => { 
+    event.preventDefault();
+    const name = event.target['name-input'].value; 
+    game = new Game(name); // 게임 객체 생성
+  });
+  
+  // 객체 안에 들어있는 this는 자기 자신을 가리킨다. (화살표 함수가 아닌 경우에 자기 자신을 가리킨다.)
+  // 화살표 함수에서 쓰면 this는 window를 가리킨다.
+  // this는 기본적으로 window를 가리킨다 (브라우저에서 console.log(this)를 해보면 나온다.) 
+  // window 객체는 브라우저를 가리키는 객체로 브라우저가 제공하는 기본 객체와 함수들은 대부분 window 객체 안에 있다. document 객체나 console 객체도 window.document, window.console이다. window는 생략할 수 있어서 document와 console로 적는 것이다. this는 기본으로 window 객체를 가리키지만 객체에서 this를 사용할 때는 해당 객체를 가리킨다.
+  // 객체.method를 해야 this가 객체를 가리킨다.
+  
+  // 자바스크립트 데이터 바꾸기 + 화면 바꿔주기 
+  // 두 개 중 하나라도 놓치면 안됨
+  
+  // 하이픈이 들어있으면 dot 표기법 X
+  // 함수 스코프에 유의
+  // 깊은 복사 
+  // 얕은 복사는 가장 바깥 껍데기만 복사해옴
+  // 2차원 이상부터는 참조함 (연결이 끊기지 않음)
+  // 이 연결을 끊게 해주는 것이 깊은 복사
+  
+  // JSON.parse(JSON.stringify(객체))는 속도가 느리고 Math나 Date와 같은 객체는 복사할 수 없다. 따라서 lodash 같은 라이브러리를 사용하고는 한다.
+      
+</script>
+</body>
+</html>
