@@ -20,7 +20,11 @@
     <div class="circle"></div>
     <div class="line"></div>
   </div>
-  <h4 class="box-vol">Volume : <span>0</span></h4>
+  <div class="box-vol">
+    <h4>Volume : <span>0</span></h4>
+    <br/>
+    <h4 class="explain">오른쪽을 조종하여 볼륨을 제어</h4>
+  </div>
   <script>
     const element = document.querySelector(".right-box");
     const rightBox = new Hammer(element);
@@ -34,7 +38,7 @@
       box.css("transform", `rotate(${e.deltaY/10}deg)`);
       
       let leftValue = parseFloat($('.circle').css("left").slice(0,-2));
-      if ((leftValue + e.deltaY/2) < 180) {
+      if ((leftValue + e.deltaY/2) < 180 && (leftValue + e.deltaY/2) >0) {
         $('.circle').css("left", "+=" + e.deltaY/2);
       }
       volumeValue.textContent = parseInt(leftValue/1.8);
@@ -44,7 +48,7 @@
       box.css("transform", `rotate(${e.deltaY/10}deg)`);
       
       let leftValue = parseFloat($('.circle').css("left").slice(0,-2));
-      if ((leftValue + e.deltaY/2) >= 0) {
+      if ((leftValue + e.deltaY/2) >= 0 && (leftValue + e.deltaY/2) <= 180) {
         $('.circle').css("left", "+=" + e.deltaY/2);
       }
       volumeValue.textContent = parseInt(leftValue/1.8);
