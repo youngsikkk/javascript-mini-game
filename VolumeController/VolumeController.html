@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <!-- cdn이란 content delivery network -->
+  <!-- 지리적 제약 없이 전 세계 사용자에게 빠르고 안전하게 콘텐츠를 전송할 수 있는 콘텐츠 전송 기술 -->
+  <script
+  src="https://code.jquery.com/jquery-3.7.1.min.js"
+  integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+  crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js" integrity="sha512-UXumZrZNiOwnTcZSHLOfcTs0aos2MzBWHXOHOuB0J/R44QB0dwY5JgfbvljXcklVf65Gc4El6RjZ+lnwd2az2g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <link href="main.css" rel="stylesheet">
+</head>
+<body>
+  <div class="box">
+    <div class="left-box"></div>
+    <div class="right-box"></div>
+    <div class="circle"></div>
+    <div class="line"></div>
+  </div>
+  <h4 class="box-vol">Volume : <span>0</span></h4>
+  <script>
+    const element = document.querySelector(".right-box");
+    const rightBox = new Hammer(element);
+    rightBox.get('pan').set({direction: Hammer.DIRECTION_ALL});
+    const volumeValue = document.querySelector(".box-vol").querySelector("span");
+
+    const box = $('.box');
+
+    rightBox.on("pandown", (e) => {
+      box.css("transform-origin", 'left-top');
+      box.css("transform", `rotate(${e.deltaY/10}deg)`);
+      
+      let leftValue = parseFloat($('.circle').css("left").slice(0,-2));
+      if ((leftValue + e.deltaY/2) < 180) {
+        $('.circle').css("left", "+=" + e.deltaY/2);
+      }
+      volumeValue.textContent = parseInt(leftValue/1.8);
+    })
+    rightBox.on("panup", (e) => {
+      box.css("transform-origin", 'left-top');
+      box.css("transform", `rotate(${e.deltaY/10}deg)`);
+      
+      let leftValue = parseFloat($('.circle').css("left").slice(0,-2));
+      if ((leftValue + e.deltaY/2) >= 0) {
+        $('.circle').css("left", "+=" + e.deltaY/2);
+      }
+      volumeValue.textContent = parseInt(leftValue/1.8);
+    })
+
+    rightBox.on("panend", (e) => {
+      $('.box').css("transform", 'rotate(0deg)')
+    })
+  </script>
+</body>
+</html>
