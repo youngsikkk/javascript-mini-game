@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>숫자야구</title>
+</head>
+<body>
+  <form id="form">
+    <input type="text" id="input"/>
+    <button>확인</button>
+  </form>
+  <div id="logs">10<span>번 남았습니다.</span></div>
+  <div id="score">
+  </div>
+  <script>
+    const $input = document.querySelector('#input');
+    const $form = document.querySelector('#form');
+    const $logs = document.querySelector('#logs');
+    const $score = document.querySelector('#score');
+    
+    let coin = 10;
+    const numbers = [];
+    let userAnswer = [];
+    const isEnd = false;
+    let dmddo = "hello world"
+    for (numbers; numbers.length < 4; ) {
+      randomNum = Math.floor(Math.random() *9)+1;
+      if (!numbers.includes(randomNum)) numbers.push(randomNum);
+    }
+    const handleClick = (e) => {
+      e.preventDefault();
+      if ($input.value.length !==4) alert('4글자를 입력해주세요');
+      else {
+        for(let k =0; k <4;k++) {
+          userAnswer.push($input.value[k]);
+        }
+        let ballCount = 0;
+        let strikeCount = 0;
+        for (let i = 0; i<4;i++){
+          for (let j = 0; j < 4; j++) {
+            if ((numbers[i] == userAnswer[j]) && i==j) strikeCount++;
+            else if (numbers[i] == userAnswer[j]) ballCount++; 
+            }
+          }
+        if (strikeCount === 4) dmddo = "홈런"
+        else if(ballCount+strikeCount) {
+          dmddo =  `${ballCount}볼 ${strikeCount} 스트라이크`;
+          coin--
+        } else if (!ballCount+strikeCount) {
+          dmddo = '낫싱';
+          coin--
+      }
+        
+    $logs.textContent = `${coin} 번 남았습니다.`;
+    const $post = document.createElement("span");
+    const $userAnswer = document.createElement("span");
+    const $br = document.createElement("br");
+    $post.textContent = dmddo;
+    $userAnswer.textContent = userAnswer;
+
+    $score.appendChild($post);
+    $score.appendChild($br);
+    $score.appendChild($userAnswer);
+    $score.appendChild($br);
+    $post.textContent = dmddo;
+    $userAnswer.textContent = userAnswer;
+    userAnswer = [];
+
+    }
+    }
+    console.log(numbers);
+    document.querySelector('button').addEventListener('click',handleClick);
+  </script>
+</body>
+</html>
