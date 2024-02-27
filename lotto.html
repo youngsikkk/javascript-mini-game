@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>로또 추첨기</title>
+  <style>
+    .ball {
+      display: inline-block;
+      border: 1px solid black;
+      border-radius: 20px;
+      width: 40px;
+      height: 40px;
+      line-height: 40px;
+      font-size: 20px;
+      text-align: center;
+      margin-right: 20px;
+    }
+  </style>
+
+</head>
+<body>
+  <div id="result">추첨 결과는? </div>
+  <div id="bonus">보너스: </div>
+  <script>
+    const $result = document.getElementById("result");
+    const $bonus = document.getElementById("bonus");
+    const numArray = Array(45).fill().map((el, i) => i+1);
+    // 피셔 예이츠 셔플
+    // 숫자를 무작위로 섞는 알고리즘. 무작위 인덱스를 하나 뽑은 후 그에 해당되는 요소를 새로운 배열로 옮긴다. 반복하다 보면 새 배열에 무작위로 섞인 숫자들이 들어감.
+    const shuffle = [];
+    while (numArray.length > 0) {
+      const random = Math.floor(Math.random() * numArray.length); // 무작위 인덱스
+      const spliceNum = numArray.splice(random, 1); // 1개 뽑기 및 중복 제거
+      shuffle.push(spliceNum[0]);
+    }
+    const lotto = shuffle.slice(0,6).sort((a,b) => a-b);
+    const bonus = shuffle[6]
+    const lottoNum = (index) => {
+      const $ball = document.createElement('div');
+      $ball.className = 'ball';
+      $ball.textContent = lotto[index];
+      $result.appendChild($ball);
+    }
+    for (let i = 0; i < lotto.length; i++) {
+      setTimeout(() =>
+        lottoNum(i), i*1000);
+      }
+
+    // 클로저, 즉시실행함수. 
+    // variable, 비동기가 만나면 closure 문제 발생
+    // var의 경우: 함수 스코프 이용
+    // let, const의 경우: 블록 스코프 이용, 대부분의 프로그래밍 언어가 블록스코프를 이용함
+    // var는 함수 스코프라서, 6이 된 뒤에 타이머가 실행되는데, 제대로 작동하지 않음
+    // 따라서 즉시 실행함수를 이용해 아래 반복문을 실행.
+    //for (var i = 0; i < lotto.length; i++) {
+      // 즉시실행함수
+    //  (function(j) { 
+    //    setTimeout(() => {
+    //      lottoNum(j)}, i*1000);
+    //  })(i);
+    //} 
+    setTimeout(() => {
+      const $ball = document.createElement('div');
+      $ball.className = 'ball';
+      $ball.textContent = bonus;
+      $bonus.appendChild($ball);
+      
+    }, 6000);
+    // slice, map은 원본 배열 수정 X
+  </script>
+</body>
+</html>
+
+<!-- 정렬 알고리즘
+
+sort((a,b) => a-b)
+sort((a,b) => a[0].charCodeAt() - b[0].charCodeAt())
+sort((a,b) => a.localeCompare(b))
+sort((a,b) => b.localeCompare(a)) -->
+
+<!-- 자바스크립트는 기본적으로 한 번에 한 가지 일만 할 수 있다. 따라서 이미 많은 일을 하고 있다면 설정한 시간이 되아도 setTimeout에 지정된 작업이 수행되지 않는다. 기존에 하고 있던 일이 끝나야 setTimeout에 지정된 작업이 실행된다. -->
