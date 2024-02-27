@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    #screen {
+      width: 90vw;
+      height: 70vh;
+      text-align: center;
+      user-select: none;
+    }
+    #screen.waiting {
+      background-color: aqua;
+    }
+    #screen.ready {
+      background-color: red;
+      color: white;
+    }
+    #screen.now {
+      background-color: greenyellow;
+    }
+    #wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #btn {
+      width: 50vw;
+      margin-top: 20px;
+      border: none;
+      height: 5vh;
+      cursor: pointer;
+      display: none;
+    }
+    #btn:hover {
+      opacity: .8;
+    }
+  </style>
+</head>
+<body>
+  <div id="wrapper">
+    <h2>반응속도 테스트</h2>
+    <div id="screen" class="waiting">클릭해서 시작하세요</div>
+    <div id="result"></div>
+    <button id="btn">재측정</button>
+  </div>
+<script>
+  const $screen = document.querySelector("#screen");
+  const $result = document.querySelector("#result");
+  const $btn = document.querySelector("#btn");
+  const replay = () => {
+    window.location.reload();
+  }
+  $btn.addEventListener("click", replay);
+  const timeSet = [];
+  let startTime = 0;
+  let endTime = 0;
+  let average = 0;
+  let isRun = false;
+
+  const handleClick = () => {
+    $screen.className = "now";
+    $screen.textContent = "클릭해주세요";
+    startTime = new Date().getTime();
+    isRun = true;
+  }
+  const resultHandler = async() => {
+    endTime = new Date().getTime();
+    timeSet.push(endTime-startTime);
+    const newResult = document.createElement("span");  
+    const lineBreak = document.createElement("br");
+    newResult.textContent = `반응속도는 ${timeSet[timeSet.length-1]}입니다.`;
+    $result.appendChild(newResult);
+    $result.appendChild(lineBreak);
+    isRun = false;
+  }
+  
+  const handleClickWaiting = () => {
+    if ($screen.className === "ready") return;
+    if (timeSet.length < 4) {
+      $screen.className = "ready";
+      $screen.textContent = "초록불이 될때까지 기다리세요"
+      let timer = setTimeout(handleClick ,(Math.random()*5)*1000);
+      if (isRun) resultHandler();
+    } else {
+      for (let i = 0; i < timeSet.length; i++) {
+        average += timeSet[i];
+      }
+      const $average = document.createElement("span");  
+      const lineBreak = document.createElement("br");
+      $average.textContent = `평균 반응 속도는 ${parseInt(average/timeSet.length)}입니다.`;
+      $result.appendChild($average);
+      $result.appendChild(lineBreak);
+      $screen.removeEventListener("click", handleClickWaiting);
+      $btn.style.display = "block";
+    }
+  }
+  
+  $screen.addEventListener("click", handleClickWaiting);
+
+  // if (timeSet.length > 4) {
+  //  timeSet.reduce((sum, currValue) => {
+  //    return sum + currValue;
+  //  }, average);
+  //  $result.textContent = average;
+  // }
+
+  
+
+</script>
+</body>
+</html>
+
