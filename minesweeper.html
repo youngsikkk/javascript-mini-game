@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>지뢰찾기</title>
+  <style>
+    table { border-collapse: collapse; }
+    td {
+      border: 1px solid #bbb;
+      text-align: center;
+      line-height: 20px;
+      width: 20px;
+      height: 20px;
+      background: #888;
+    }
+    td.opened { background: white; }
+    td.flag { background: red; }
+    td.question { background: orange; }
+  </style>
+</head>
+<body>
+  <form id="form">
+    <input placeholder="가로 줄" id="row" size="5" />
+    <input placeholder="세로 줄" id="cell" size="5" />
+    <input placeholder="지뢰" id="mine" size="5" />
+    <button>생성</button>
+  </form>
+  <div id="timer">0초</div>
+  <table id="table">
+    <tbody></tbody>
+  </table>
+  <div id="result"></div>
+
+  <script>
+    const $timer = document.querySelector('#timer');
+    const $form = document.querySelector("#form");
+    const $tBody = document.querySelector("#table tbody");
+    const $result = document.querySelector("#result");
+    const CODE = {
+      NORMAL:-1,
+      QUESTION: -2,
+      FLAG: -3,
+      QUESTION_MINE: -4,
+      FLAG_MINE: -5,
+      MINE: -6,
+      OPENED:0
+    }
+    let data;
+    let openCount = 0;
+    let startTime = new Date();
+    const interval = setInterval(() => {
+      const time = Math.floor((new Date() - startTime)/1000);
+      $timer.textContent = `${time}초`;
+    }, 1000);
+
+    function plantMine(row, cell, mine) {
+      const candidate = Array(row*cell).fill().map((arr, idx) => idx);  
+      const createGround = [];
+      while (candidate.length > 0) {
+        const randomNum = Math.floor(Math.random() * candidate.length);
+        const spliceNum = candidate.splice(randomNum, 1);
+        createGround.push(spliceNum[0]);
+      }
+      const data = [];
+      for (let i = 0; i < cell; i++) {
+        data.push(Array(row).fill(-1))
+      }
+      const createMine = createGround.slice(0, mine);
+      for (let i = 0; i < createMine.length; i++) {
+        const column = Math.floor(createMine[i]/cell);
+        const mineRow = createMine[i]%cell
+        data[column][mineRow] = CODE.MINE;
+      }
+      return data;
+    }
+
+    function countMine(rowIndex, cellIndex) {
+      const mines = [CODE.MINE, CODE.QUESTION_MINE, CODE.FLAG_MINE];
+      let i = 0;
+      mines.includes(data[rowIndex-1]?.[cellIndex-1]) && i++;
+      mines.includes(data[rowIndex-1]?.[cellIndex]) && i++;
+      mines.includes(data[rowIndex-1]?.[cellIndex+1]) && i++;
+      mines.includes(data[rowIndex][cellIndex-1]) && i++;
+      mines.includes(data[rowIndex][cellIndex+1]) && i++;
+      mines.includes(data[rowIndex+1]?.[cellIndex-1]) && i++;
+      mines.includes(data[rowIndex+1]?.[cellIndex]) && i++;
+      mines.includes(data[rowIndex+1]?.[cellIndex+1]) && i++;
+      return i;
+    }
+
+    function open(rI, cI) {
+      if (data[rI]?.[cI] >= CODE.OPENED) return
+      const target = $tBody.children[rI]?.children[cI];
+      if (!target) return;
+      const count = countMine(rI, cI);
+      target.textContent = count || '';
+      target.className = 'opened';
+      data[rI][cI] = count;
+      openCount++;
+      if (openCount === row*cell - mine) {
+        const time = (new Date() - startTime) / 1000;
+        clearInterval(interval);
+        $tBody.removeEventListener("contextmenu", onRightClick);
+        $tBody.removeEventListener("click", onLeftClick);
+        setTimeout(() => {
+          alert(`승리했습니다. ${time}초가 걸렸습니다.`)
+        },500); // 화면 그릴 시간을 주는 것
+      }
+      return count;
+    }
+
+
+    // 동기로 호출하면 호출스택이 터지므로, 비동기 함수를 이용해 우선 백그라운드 및 태스크 큐로 넘겨 스택이 빌 때까지 기다렸다가 보내주는 형식
+
+    function openAround(rI, cI) {
+      setTimeout(() => {
+        const count = open(rI,cI)
+        if (count === 0) {
+          openAround(rI-1, cI-1);
+          openAround(rI-1, cI);
+          openAround(rI-1, cI+1);
+          openAround(rI, cI-1);
+          openAround(rI, cI+1);
+          openAround(rI+1, cI-1);
+          openAround(rI+1, cI);
+          openAround(rI+1, cI+1);
+        }
+      }, 0);
+    }
+
+    function onLeftClick(event) {
+      const target = event.target;
+      const rowIndex = target.parentNode.rowIndex;
+      const cellIndex = target.cellIndex;
+      const cellData = data[rowIndex][cellIndex];
+      if (cellData === CODE.NORMAL) {
+        openAround(rowIndex, cellIndex)
+      } else if (cellData === CODE.MINE) {
+        target.textContent = '펑';
+        target.className = 'opened';
+        clearInterval(interval);
+        $tBody.removeEventListener("contextmenu", onRightClick);
+        $tBody.removeEventListener("click", onLeftClick);
+      }
+    }
+
+    function onRightClick(event) {
+      event.preventDefault();
+      const target = event.target;
+      const rowIndex = target.parentNode.rowIndex;
+      const cellIndex = target.cellIndex;
+      const cellData = data[rowIndex][cellIndex];
+      if (cellData === CODE.MINE) { // 지뢰면
+        data[rowIndex][cellIndex] = CODE.QUESTION_MINE; // 물음표 지뢰로
+        target.className = 'question';
+        target.textContent = '?';
+      } else if (cellData === CODE.QUESTION_MINE) { // 물음표 지뢰면
+        data[rowIndex][cellIndex] = CODE.FLAG_MINE; // 깃발 지뢰로
+        target.className = 'flag';
+        target.textContent = '!';
+      } else if (cellData === CODE.FLAG_MINE) { // 깃발 지뢰면
+        data[rowIndex][cellIndex] = CODE.MINE; // 지뢰로
+        target.className = '';
+        target.textContent = '';
+      } else if (cellData === CODE.NORMAL) { // 닫힌 칸이면
+        data[rowIndex][cellIndex] = CODE.QUESTION; // 물음표로
+        target.className = 'question';
+        target.textContent = '?';
+      } else if (cellData === CODE.QUESTION) { // 물음표면
+        data[rowIndex][cellIndex] = CODE.FLAG; // 깃발으로
+        target.className = 'flag';
+        target.textContent = '!';
+      } else if (cellData === CODE.FLAG) { // 깃발이면
+        data[rowIndex][cellIndex] = CODE.NORMAL; // 닫힌 칸으로
+        target.className = '';
+        target.textContent = '';
+      }
+    }
+
+    function makingMineMap(event) {
+      event.preventDefault();
+      const row = parseInt(event.target[0].value);
+      const cell = parseInt(event.target[1].value);
+      const mine = parseInt(event.target[2].value)
+      data = plantMine(row, cell, mine);
+      for (let i = 0; i < cell; i++) {
+        const $tr = document.createElement("tr");
+        for (let j = 0; j < row; j++) {
+          const $td = document.createElement("td");
+          if (data[i][j] === CODE.MINE) {
+            //$td.textContent = "X";
+          }
+          $tr.append($td);
+        }
+        $tBody.append($tr);
+        $tBody.addEventListener("contextmenu", onRightClick); // 이벤트 버블링: 자식에서 부모로 이벤트 전달
+        $tBody.addEventListener("click", onLeftClick); 
+        // tr에 이벤트가 발생하면, 부모 요소에 있는 이벤트리스너가 작동 -> 1개로 작동시킬 수 있어서 편리
+      }
+    }
+
+    $form.addEventListener("submit", makingMineMap);
+  </script>
+</body>
+</html>
+
+<!-- 옵셔널 체이닝 -->
+<!-- 앞에 있는 것이 참인 값이면 뒤 코드를 실행하고 거짓인 값이면 코드를 통째로 undefined로 만든다. -->
+<!-- 객체나 배열 뿐만 아니라 함수에도 옵셔널체이닝을 적용할 수 있다. 속성에 접근하거나 호출하려는 것이 거짓인 값인지 아닌지 의심될 때 옵셔널 체이닝을 적용하면 된다. -->
+
+<!-- 재귀함수 -->
+<!-- 어떤 함수의 내부에서 자기 자신을 다시 호출하는 함수를 재귀함수라고 한다. -->
+<!-- 재귀 함수를 사용할 때 호출 스택의 최대 크기를 초과하는 경우가 빈번하게 발생한다. 이때 setTimeout과 같은 비동기 함수를 사용하여 해결할 수 있다. -->
+<!-- 재귀 함수를 사용할 때는 연산량이 많으면 브라우저가 느려지는 현상이 발생하므로 연산량을 최소화할 수 있게 코드를 작성해야한다 -->
+<!-- ex) 방문표시하여 재방문하는 일을 줄일 것 -->
