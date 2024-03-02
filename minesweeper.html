@@ -48,11 +48,8 @@
     }
     let data;
     let openCount = 0;
-    let startTime = new Date();
-    const interval = setInterval(() => {
-      const time = Math.floor((new Date() - startTime)/1000);
-      $timer.textContent = `${time}초`;
-    }, 1000);
+    let interval;
+    
 
     function plantMine(row, cell, mine) {
       const candidate = Array(row*cell).fill().map((arr, idx) => idx);  
@@ -179,7 +176,14 @@
     }
 
     function makingMineMap(event) {
-      event.preventDefault();
+      event.preventDefault();   
+      $tBody.textContent = '';
+      clearInterval(interval);
+      const startTime = new Date();
+      interval = setInterval(() => {
+        const time = Math.floor((new Date() - startTime)/1000);
+        $timer.textContent = `${time}초`;
+      }, 1000);
       const row = parseInt(event.target[0].value);
       const cell = parseInt(event.target[1].value);
       const mine = parseInt(event.target[2].value)
