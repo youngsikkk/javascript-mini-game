@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <div class="title">
+    <strong>JavaScript Arrow Key Event</strong>
+    <p>방향키로 도형을 움직여보세요</p>
+  </div>
+  <canvas id="canvas" style="width: 300px;height: 300px;"></canvas>
+<script>
+  const canvas = document.querySelector('#canvas');
+  const ctx = canvas.getContext('2d');
+  
+  const centerWidth = canvas.width / 2;
+  const centerHeight = canvas.height / 2;
+
+  const rectWidth = 10;
+  const rectHeight = 10;
+
+  let rectXLocation = (canvas.width - rectWidth) / 2;
+  let rectYLocation = (canvas.height - rectHeight) / 2;
+
+  let rightPress = false;
+  let leftPress = false;
+  let upPress = false;
+  let downPress = false;
+
+  // 방향키 이벤트는 key랑 keyCode를 이용해 알 수 있다.
+  // console.log로 이벤트 확인가능
+  // 간단한 웹게임 만들 수 있는 유용한 도구같음
+
+  function onKeyPress(e) {
+    if (e.key === "ArrowRight" || e.keyCode === 39) {
+      rightPress = true;
+      return
+    }
+    else if (e.key === "ArrowUp" || e.keyCode === 38) {
+      upPress = true;
+      return
+    }
+    else if (e.key === "ArrowDown" || e.keyCode === 40) {
+      downPress = true;
+      return
+    }
+    else if (e.key === "ArrowLeft" || e.keyCode === 37) {
+      leftPress = true;
+      return
+    }
+  }
+
+  function onKeyPressDown(e) {
+    if (e.key === "ArrowRight" || e.keyCode === 39) {
+      rightPress = false;
+      return
+    }
+    else if (e.key === "ArrowUp" || e.keyCode === 38) {
+      upPress = false;
+      return
+    }
+    else if (e.key === "ArrowDown" || e.keyCode === 40) {
+      downPress = false;
+      return
+    }
+    else if (e.key === "ArrowLeft" || e.keyCode === 37) {
+      leftPress = false;
+      return
+    }
+  }
+
+  function drawRect() {
+    ctx.beginPath();
+    ctx.rect(rectXLocation, rectYLocation, rectWidth, rectHeight);
+    ctx.stroke();
+    ctx.closePath();
+  }
+
+  function draw() {
+    ctx.clearRect(0,0, canvas.width, canvas.height);
+    drawRect();
+    if (rightPress && rectXLocation < canvas.width - rectWidth) rectXLocation += 5
+    else if (leftPress && rectXLocation > 0) rectXLocation -= 5
+    else if (upPress && rectYLocation > 0) rectYLocation -= 5
+    else if (downPress && rectYLocation < canvas.height - rectHeight) rectYLocation += 5
+  }
+
+  document.addEventListener("keydown", onKeyPress);
+  document.addEventListener("keyup", onKeyPressDown);
+
+  setInterval(draw, 10);
+
+</script>
+</body>
+</html>
